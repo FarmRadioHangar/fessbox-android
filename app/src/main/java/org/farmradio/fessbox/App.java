@@ -83,13 +83,18 @@ public class App extends Application {
     private void updateChannels(JSONObject data, ChannelUpdateHandler updater) {
         JSONObject channels = state.optJSONObject("channels");
         if (channels == null) {
-            return;
+            channels = new JSONObject();
         }
         updater.setChannels(channels);
         Iterator<String> it = data.keys();
         while (it.hasNext()) {
             String key = it.next();
             updater.update(key, channels.optJSONObject(key));
+        }
+        try {
+            state.put("channels", channels);
+        } catch (JSONException e) {
+            Log.e("FessBox", e.toString());
         }
     }
 
