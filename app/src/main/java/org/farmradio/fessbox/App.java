@@ -69,6 +69,14 @@ public class App extends Application {
         }
     }
 
+    public JSONObject getMaster() {
+        try {
+            return state.getJSONObject("master");
+        } catch (JSONException exception) {
+            return new JSONObject();
+        }
+    }
+
     private void updateChannels(JSONObject data, ChannelUpdateHandler updater) {
         JSONObject channels = state.optJSONObject("channels");
         if (channels == null) {
@@ -158,10 +166,12 @@ public class App extends Application {
                             if (master == null) {
                                 master = new JSONObject();
                             }
-                            master.put("level", message.optInt("data"));
+                            int level = message.optInt("data");
+                            master.put("level", level);
+                            state.put("master", master);
                             notifyChange();
 
-                            Log.d("FessBox", "masterVolumeChange");
+                            Log.d("FessBox", "masterVolumeChange: " + level);
                             break;
                         }
                         case "userUpdate":

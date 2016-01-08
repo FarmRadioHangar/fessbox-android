@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.widget.ListView;
 import android.content.Context;
@@ -50,7 +51,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateMaster() {
+        Switch toggle = (Switch) findViewById(R.id.masterSwitch);
+        SeekBar seekBar = (SeekBar) findViewById(R.id.masterSeekBar);
+        App app = (App) getApplication();
+        JSONObject master = app.getMaster();
 
+        int level = master.optInt("level");
+        seekBar.setProgress(level);
+
+        Log.d("FessBox", "set master level to " + level);
     }
 
     class ActionReceiver extends BroadcastReceiver {
