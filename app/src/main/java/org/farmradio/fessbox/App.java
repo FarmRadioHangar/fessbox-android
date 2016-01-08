@@ -16,9 +16,11 @@ public class App extends Application {
 
     public static final String ACTION_LAUNCH_MAIN = "org.farmradio.fessbox.intent.action.ACTION_LAUNCH_MAIN";
 
-    public static final String NOTIFY = "org.farmradio.fessbox.intent.action.NOTIFY";
+    public static final String MESSAGE = "org.farmradio.fessbox.intent.action.MESSAGE";
 
-    public static final String CHANGE = "org.farmradio.fessbox.intent.action.CHANGE";
+    public static final String CHANNEL_LIST_UPDATE = "org.farmradio.fessbox.intent.action.CHANNEL_LIST_UPDATE";
+
+    public static final String MASTER_UPDATE = "org.farmradio.fessbox.intent.action.MASTER_UPDATE";
 
     private JSONObject state;
 
@@ -46,7 +48,7 @@ public class App extends Application {
         receiver = new ActionReceiver();
 
         IntentFilter filter = new IntentFilter();
-        filter.addAction(App.NOTIFY);
+        filter.addAction(App.MESSAGE);
         filter.addCategory(Intent.CATEGORY_DEFAULT);
 
         registerReceiver(receiver, filter);
@@ -98,16 +100,11 @@ public class App extends Application {
         }
     }
 
-    private void notifyChange() {
-        Intent intent = new Intent(App.CHANGE);
-        sendBroadcast(intent);
-    }
-
     class ActionReceiver extends BroadcastReceiver {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(App.NOTIFY)) {
+            if (intent.getAction().equals(App.MESSAGE)) {
                 try {
                     JSONObject message = new JSONObject(intent.getStringExtra("payload"));
 
@@ -132,7 +129,7 @@ public class App extends Application {
                                 }
 
                             });
-                            notifyChange();
+                            sendBroadcast(new Intent(App.CHANNEL_LIST_UPDATE));
 
                             Log.d("FessBox", "channelUpdate");
                             break;
@@ -156,7 +153,7 @@ public class App extends Application {
                                 }
 
                             });
-                            notifyChange();
+                            sendBroadcast(new Intent(App.CHANNEL_LIST_UPDATE));
 
                             Log.d("FessBox", "channelVolumeChange");
                             break;
@@ -164,7 +161,7 @@ public class App extends Application {
                         case "masterUpdate": {
                             JSONObject data = message.getJSONObject("data");
                             state.put("master", data);
-                            notifyChange();
+                            sendBroadcast(new Intent(App.MASTER_UPDATE));
 
                             Log.d("FessBox", "masterUpdate");
                             break;
@@ -177,7 +174,7 @@ public class App extends Application {
                             int level = message.optInt("data");
                             master.put("level", level);
                             state.put("master", master);
-                            notifyChange();
+                            sendBroadcast(new Intent(App.MASTER_UPDATE));
 
                             Log.d("FessBox", "masterVolumeChange: " + level);
                             break;

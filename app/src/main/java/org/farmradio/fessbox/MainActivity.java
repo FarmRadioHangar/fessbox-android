@@ -39,7 +39,8 @@ public class MainActivity extends AppCompatActivity {
         receiver = new ActionReceiver();
 
         IntentFilter filter = new IntentFilter();
-        filter.addAction(App.CHANGE);
+        filter.addAction(App.MASTER_UPDATE);
+        filter.addAction(App.CHANNEL_LIST_UPDATE);
         filter.addCategory(Intent.CATEGORY_DEFAULT);
         registerReceiver(receiver, filter);
     }
@@ -51,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateMaster() {
-        Switch toggle = (Switch) findViewById(R.id.masterSwitch);
+        //Switch toggle = (Switch) findViewById(R.id.masterSwitch);
         SeekBar seekBar = (SeekBar) findViewById(R.id.masterSeekBar);
         App app = (App) getApplication();
         JSONObject master = app.getMaster();
@@ -64,8 +65,10 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(App.CHANGE)) {
+            String action = intent.getAction();
+            if (action.equals(App.CHANNEL_LIST_UPDATE)) {
                 adapter.notifyDataSetChanged();
+            } else if (action.equals(App.MASTER_UPDATE)) {
                 updateMaster();
             }
         }

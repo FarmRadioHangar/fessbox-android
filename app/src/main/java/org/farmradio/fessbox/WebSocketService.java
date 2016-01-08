@@ -33,7 +33,7 @@ public class WebSocketService extends IntentService {
 
                 @Override
                 public void onTextMessage(String payload) {
-                    Intent intent = new Intent(App.NOTIFY);
+                    Intent intent = new Intent(App.MESSAGE);
                     intent.putExtra("payload", payload);
                     sendBroadcast(intent);
 
