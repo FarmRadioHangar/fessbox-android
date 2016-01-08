@@ -25,7 +25,7 @@ public class WebSocketService extends IntentService {
 
                 @Override
                 public void onOpen() {
-                    Intent intent = new Intent(App.LAUNCH_MAIN);
+                    Intent intent = new Intent(App.ACTION_LAUNCH_MAIN);
                     sendBroadcast(intent);
 
                     Log.d("FessBox", "Status: Connected");

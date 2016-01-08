@@ -14,7 +14,7 @@ import java.util.Iterator;
 
 public class App extends Application {
 
-    public static final String LAUNCH_MAIN = "org.farmradio.fessbox.intent.action.LAUNCH_MAIN";
+    public static final String ACTION_LAUNCH_MAIN = "org.farmradio.fessbox.intent.action.ACTION_LAUNCH_MAIN";
 
     public static final String NOTIFY = "org.farmradio.fessbox.intent.action.NOTIFY";
 

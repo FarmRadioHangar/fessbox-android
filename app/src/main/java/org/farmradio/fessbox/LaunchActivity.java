@@ -27,7 +27,7 @@ public class LaunchActivity extends AppCompatActivity {
         receiver = new ActionReceiver();
 
         IntentFilter filter = new IntentFilter();
-        filter.addAction(App.LAUNCH_MAIN);
+        filter.addAction(App.ACTION_LAUNCH_MAIN);
         filter.addCategory(Intent.CATEGORY_DEFAULT);
         registerReceiver(receiver, filter);
 
@@ -46,7 +46,7 @@ public class LaunchActivity extends AppCompatActivity {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(App.LAUNCH_MAIN)) {
+            if (intent.getAction().equals(App.ACTION_LAUNCH_MAIN)) {
 
                 new CountDownTimer(2000, 1000) {
 
