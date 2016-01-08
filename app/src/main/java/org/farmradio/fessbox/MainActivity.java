@@ -1,5 +1,8 @@
 package org.farmradio.fessbox;
 
+import android.content.BroadcastReceiver;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
@@ -19,20 +22,42 @@ import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity {
 
+    private ChannelAdapter adapter;
+
+    private ActionReceiver receiver;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        ChannelAdapter adapter = new ChannelAdapter(this, (App) getApplication());
+        adapter = new ChannelAdapter(this, (App) getApplication());
         ListView listView = (ListView) findViewById(R.id.listView);
         listView.setAdapter(adapter);
+
+        receiver = new ActionReceiver();
+
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(App.CHANGE);
+        filter.addCategory(Intent.CATEGORY_DEFAULT);
+        registerReceiver(receiver, filter);
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
+    }
+
+    class ActionReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(App.CHANGE)) {
+                adapter.notifyDataSetChanged();
+            }
+        }
+
     }
 
 }
@@ -55,8 +80,6 @@ class ChannelAdapter extends BaseAdapter {
 
     public ChannelAdapter(Context context, App app) {
         super();
-
-        //app.setAdapter(this);
 
         this.app = app;
         inflater = LayoutInflater.from(context);

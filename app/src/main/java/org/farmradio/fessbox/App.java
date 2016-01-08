@@ -1,30 +1,32 @@
 package org.farmradio.fessbox;
 
 import android.app.Application;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
-import android.os.CountDownTimer;
+import android.content.IntentFilter;
 import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import de.tavendo.autobahn.WebSocketConnection;
-import de.tavendo.autobahn.WebSocketException;
-import de.tavendo.autobahn.WebSocketHandler;
-
 import java.util.Iterator;
 
 public class App extends Application {
 
-    public static final String LAUNCH_MAIN_ACTIVITY = "org.farmradio.fessbox.intent.LAUNCH_MAIN_ACTIVITY";
+    public static final String LAUNCH_MAIN = "org.farmradio.fessbox.intent.action.LAUNCH_MAIN";
+
+    public static final String NOTIFY = "org.farmradio.fessbox.intent.action.NOTIFY";
+
+    public static final String CHANGE = "org.farmradio.fessbox.intent.action.CHANGE";
 
     private JSONObject state;
 
-    private final WebSocketConnection connection = new WebSocketConnection();
-
-    private final ConnectionHandler connectionHandler = new ConnectionHandler();
+    private ActionReceiver receiver;
 
     public App() {
+        super();
+
         try {
             state = new JSONObject(
                 "{\"channels\": { \"chan_1\": {}, \"chan_2\": {}, \"chan_3\": {} } }"
@@ -34,42 +36,17 @@ public class App extends Application {
         }
     }
 
-    public void startMainActivity() {
+    @Override
+    public void onCreate() {
+        super.onCreate();
 
-        Intent intent = new Intent();
-        intent.setAction(LAUNCH_MAIN_ACTIVITY);
-        sendBroadcast(intent);
+        receiver = new ActionReceiver();
 
-        /*
-        new CountDownTimer(2000, 1000) {
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(App.NOTIFY);
+        filter.addCategory(Intent.CATEGORY_DEFAULT);
 
-            @Override
-            public void onFinish() {
-
-                Intent intent = new Intent();
-                intent.setAction(LAUNCH_MAIN_ACTIVITY);
-                sendBroadcast(intent);
-
-                //progress.dismiss();
-                //finish();
-
-                //Intent intent = new Intent(LaunchActivity.this, MainActivity.class);
-                //startActivity(intent);
-            }
-
-            @Override
-            public void onTick(long millisUntilFinished) { }
-
-        }.start();
-        */
-
-        /*
-        progress.dismiss();
-        finish();
-
-        Intent intent = new Intent(this, MainActivity.class);
-        startActivity(intent);
-        */
+        registerReceiver(receiver, filter);
     }
 
     public int getChannelCount() {
@@ -92,93 +69,6 @@ public class App extends Application {
         }
     }
 
-    public void receiveMessage(String payload) {
-        try {
-            JSONObject message = new JSONObject(payload);
-
-            switch (message.optString("event")) {
-
-                case "channelUpdate": {
-                    final JSONObject data = message.getJSONObject("data");
-                    updateChannels(data, new ChannelUpdateHandler() {
-
-                        @Override
-                        public void update(String key, JSONObject channel) {
-                            JSONObject json = data.optJSONObject(key);
-                            if (json != null) {
-                                try {
-                                    channels.put(key, json);
-                                } catch (JSONException e) {
-                                    Log.e("FessBox", e.toString());
-                                }
-                            } else {
-                                channels.remove(key);
-                            }
-                        }
-
-                    });
-                    //this.adapter.notifyDataSetChanged();
-
-                    Log.d("FessBox", "channelUpdate");
-                    break;
-                }
-                case "channelVolumeChange": {
-                    final JSONObject data = message.getJSONObject("data");
-                    updateChannels(data, new ChannelUpdateHandler() {
-
-                        @Override
-                        public void update(String key, JSONObject channel) {
-                            if (channel == null) {
-                                Log.e("FessBox", "No such channel: " + key);
-                                return;
-                            }
-                            int value = data.optInt(key);
-                            try {
-                                channel.put("level", value);
-                            } catch (JSONException e) {
-                                Log.e("FessBox", e.toString());
-                            }
-                        }
-
-                    });
-                    //this.adapter.notifyDataSetChanged();
-
-                    Log.d("FessBox", "channelVolumeChange");
-                    break;
-                }
-                case "masterUpdate": {
-                    JSONObject data = message.getJSONObject("data");
-                    state.put("master", data);
-
-                    Log.d("FessBox", "masterUpdate");
-                    break;
-                }
-                case "masterVolumeChange": {
-                    JSONObject master = state.optJSONObject("master");
-                    if (master == null) {
-                        master = new JSONObject();
-                    }
-                    master.put("level", message.optInt("data"));
-
-                    Log.d("FessBox", "masterVolumeChange");
-                    break;
-                }
-                case "userUpdate":
-                    break;
-
-                case "channelContactInfo":
-                    break;
-
-                case "inboxUpdate":
-                    break;
-
-                default:
-                    break;
-            }
-
-        } catch (JSONException exception) { }
-    }
-
     private void updateChannels(JSONObject data, ChannelUpdateHandler updater) {
         JSONObject channels = state.optJSONObject("channels");
         if (channels == null) {
@@ -192,35 +82,104 @@ public class App extends Application {
         }
     }
 
-    private void connectWebSocket() {
-        try {
-            connection.connect("ws://192.168.1.143:8001", connectionHandler);
-        } catch (WebSocketException exception) {
-            Log.d("FessBox", exception.toString());
-        }
+    private void notifyChange() {
+        Intent intent = new Intent(App.CHANGE);
+        sendBroadcast(intent);
     }
 
-    class ConnectionHandler extends WebSocketHandler {
+    class ActionReceiver extends BroadcastReceiver {
 
         @Override
-        public void onOpen() {
-            App.this.startMainActivity();
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(App.NOTIFY)) {
+                try {
+                    JSONObject message = new JSONObject(intent.getStringExtra("payload"));
 
-            Log.d("FessBox", "Status: Connected");
+                    switch (message.optString("event")) {
+
+                        case "channelUpdate": {
+                            final JSONObject data = message.getJSONObject("data");
+                            updateChannels(data, new ChannelUpdateHandler() {
+
+                                @Override
+                                public void update(String key, JSONObject channel) {
+                                    JSONObject json = data.optJSONObject(key);
+                                    if (json != null) {
+                                        try {
+                                            channels.put(key, json);
+                                        } catch (JSONException e) {
+                                            Log.e("FessBox", e.toString());
+                                        }
+                                    } else {
+                                        channels.remove(key);
+                                    }
+                                }
+
+                            });
+                            notifyChange();
+
+                            Log.d("FessBox", "channelUpdate");
+                            break;
+                        }
+                        case "channelVolumeChange": {
+                            final JSONObject data = message.getJSONObject("data");
+                            updateChannels(data, new ChannelUpdateHandler() {
+
+                                @Override
+                                public void update(String key, JSONObject channel) {
+                                    if (channel == null) {
+                                        Log.e("FessBox", "No such channel: " + key);
+                                        return;
+                                    }
+                                    int value = data.optInt(key);
+                                    try {
+                                        channel.put("level", value);
+                                    } catch (JSONException e) {
+                                        Log.e("FessBox", e.toString());
+                                    }
+                                }
+
+                            });
+                            notifyChange();
+
+                            Log.d("FessBox", "channelVolumeChange");
+                            break;
+                        }
+                        case "masterUpdate": {
+                            JSONObject data = message.getJSONObject("data");
+                            state.put("master", data);
+                            notifyChange();
+
+                            Log.d("FessBox", "masterUpdate");
+                            break;
+                        }
+                        case "masterVolumeChange": {
+                            JSONObject master = state.optJSONObject("master");
+                            if (master == null) {
+                                master = new JSONObject();
+                            }
+                            master.put("level", message.optInt("data"));
+                            notifyChange();
+
+                            Log.d("FessBox", "masterVolumeChange");
+                            break;
+                        }
+                        case "userUpdate":
+                            break;
+
+                        case "channelContactInfo":
+                            break;
+
+                        case "inboxUpdate":
+                            break;
+
+                        default:
+                            break;
+                    }
+                } catch (JSONException exception) {
+                }
+            }
         }
-
-        @Override
-        public void onTextMessage(String payload) {
-            App.this.receiveMessage(payload);
-
-            Log.d("FessBox", "Got: " + payload);
-        }
-
-        @Override
-        public void onClose(int code, String reason) {
-            Log.d("FessBox", "Connection lost.");
-        }
-
     }
 
 }
