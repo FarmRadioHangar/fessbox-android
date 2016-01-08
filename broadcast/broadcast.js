@@ -10,6 +10,8 @@ process.stdin.on('data', function(buf) {
 
 process.stdin.on('end', function() {
 
+  console.log(data);
+
   var conn = ws.connect('ws://localhost:8001');
   
   conn.on('connect', function() {
