@@ -21,6 +21,7 @@ public class WebSocketService extends IntentService {
         super.onCreate();
 
         try {
+            //192.168.1.38:19998
             connection.connect("ws://192.168.1.143:8001", new WebSocketHandler() {
 
                 @Override

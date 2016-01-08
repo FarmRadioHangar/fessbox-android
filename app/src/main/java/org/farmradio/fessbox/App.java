@@ -108,6 +108,8 @@ public class App extends Application {
                 try {
                     JSONObject message = new JSONObject(intent.getStringExtra("payload"));
 
+                    Log.d("FessBox", message.toString());
+
                     switch (message.optString("event")) {
 
                         case "channelUpdate": {
