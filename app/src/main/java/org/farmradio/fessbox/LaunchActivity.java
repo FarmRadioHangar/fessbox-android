@@ -23,7 +23,6 @@ public class LaunchActivity extends AppCompatActivity {
                 @Override
                 public void onOpen() {
                     Log.d("FessBox", "Status: Connected to " + uri);
-                    //connection.sendTextMessage("Hello, world!");
                 }
 
                 @Override
