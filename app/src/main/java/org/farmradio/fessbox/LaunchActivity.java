@@ -46,11 +46,15 @@ public class LaunchActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(App.LAUNCH_MAIN)) {
+
+                /*
                 progress.dismiss();
                 finish();
 
                 Intent main = new Intent(LaunchActivity.this, MainActivity.class);
                 startActivity(main);
+                */
+
             }
         }
 
