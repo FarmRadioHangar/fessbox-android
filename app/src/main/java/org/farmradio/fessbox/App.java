@@ -27,6 +27,8 @@ public class App extends Application {
     public App() {
         super();
 
+        state = new JSONObject();
+        /*
         try {
             state = new JSONObject(
                 "{\"channels\": { \"chan_1\": {\"number\": \"+255 123 123 132\"}, \"chan_2\": {}, \"chan_3\": {} } }"
@@ -34,6 +36,7 @@ public class App extends Application {
         } catch (JSONException exception) {
             state = new JSONObject();
         }
+        */
     }
 
     @Override

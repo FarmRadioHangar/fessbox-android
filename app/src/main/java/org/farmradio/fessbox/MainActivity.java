@@ -58,8 +58,6 @@ public class MainActivity extends AppCompatActivity {
 
         int level = master.optInt("level");
         seekBar.setProgress(level);
-
-        Log.d("FessBox", "set master level to " + level);
     }
 
     class ActionReceiver extends BroadcastReceiver {
