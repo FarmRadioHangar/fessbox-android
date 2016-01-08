@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.support.v7.app.AppCompatActivity;
 
 public class LaunchActivity extends AppCompatActivity {
@@ -46,6 +47,23 @@ public class LaunchActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(App.LAUNCH_MAIN)) {
+
+                new CountDownTimer(2000, 1000) {
+
+                    @Override
+                    public void onFinish() {
+                        progress.dismiss();
+                        finish();
+
+                        Intent intent = new Intent(LaunchActivity.this, MainActivity.class);
+                        startActivity(intent);
+                    }
+
+                    @Override
+                    public void onTick(long millisUntilFinished) { }
+
+                }.start();
+
 
                 /*
                 progress.dismiss();
