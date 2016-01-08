@@ -17,7 +17,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:minWidth="100dp"
-            android:text="Master" />
+            android:text="@string/master" />
 
         <Switch
             android:layout_gravity="center"
