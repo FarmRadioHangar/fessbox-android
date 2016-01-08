@@ -15,45 +15,11 @@ public class LaunchActivity extends AppCompatActivity {
 
     private final WebSocketConnection connection = new WebSocketConnection();
 
-    private void connect() {
-        final String uri = "ws://192.168.1.143:8001";
-        try {
-            connection.connect(uri, new WebSocketHandler() {
+    private final ConnectionHandler connectionHandler = new ConnectionHandler();
 
-                @Override
-                public void onOpen() {
-                    Log.d("FessBox", "Status: Connected to " + uri);
-                }
+    private ProgressDialog progress;
 
-                @Override
-                public void onTextMessage(String payload) {
-                    Log.d("FessBox", "Got: " + payload);
-                    App app = (App) getApplication();
-                    app.receiveMessage(payload);
-                }
-
-                @Override
-                public void onClose(int code, String reason) {
-                    Log.d("FessBox", "Connection lost.");
-                }
-
-            });
-        } catch (WebSocketException exception) {
-            Log.d("FessBox", exception.toString());
-        }
-   }
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        final ProgressDialog progress = new ProgressDialog(this);
-        progress.setTitle("Please wait");
-        progress.setMessage("Connecting to service.");
-        progress.show();
-
-        connect();
-
+    public void startMainActivity() {
         new CountDownTimer(2000, 1000) {
 
             @Override
@@ -70,6 +36,58 @@ public class LaunchActivity extends AppCompatActivity {
 
         }.start();
 
+        /*
+        progress.dismiss();
+        finish();
+
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+        */
+    }
+
+
+    private void connect() {
+        try {
+            connection.connect("ws://192.168.1.143:8001", connectionHandler);
+        } catch (WebSocketException exception) {
+            Log.d("FessBox", exception.toString());
+        }
+   }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        progress = new ProgressDialog(this);
+        progress.setTitle("Please wait");
+        progress.setMessage("Connecting to service.");
+        progress.show();
+
+        connect();
+    }
+
+    class ConnectionHandler extends WebSocketHandler {
+
+        @Override
+        public void onOpen() {
+            LaunchActivity.this.startMainActivity();
+
+            Log.d("FessBox", "Status: Connected");
+        }
+
+        @Override
+        public void onTextMessage(String payload) {
+            Log.d("FessBox", "Got: " + payload);
+            //App app = (App) getApplication();
+            //app.receiveMessage(payload);
+        }
+
+        @Override
+        public void onClose(int code, String reason) {
+            Log.d("FessBox", "Connection lost.");
+        }
+
     }
 
 }
+
