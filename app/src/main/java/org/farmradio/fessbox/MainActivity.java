@@ -49,12 +49,17 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    private void updateMaster() {
+
+    }
+
     class ActionReceiver extends BroadcastReceiver {
 
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(App.CHANGE)) {
                 adapter.notifyDataSetChanged();
+                updateMaster();
             }
         }
 
