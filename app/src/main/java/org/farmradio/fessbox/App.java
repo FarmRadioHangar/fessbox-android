@@ -61,11 +61,11 @@ public class App extends Application {
     public void receiveMessage(String payload) {
         try {
             JSONObject message = new JSONObject(payload);
-            final JSONObject data = message.getJSONObject("data");
 
             switch (message.optString("event")) {
 
-                case "channelUpdate":
+                case "channelUpdate": {
+                    final JSONObject data = message.getJSONObject("data");
                     updateChannels(data, new ChannelUpdateHandler() {
 
                         @Override
@@ -87,8 +87,9 @@ public class App extends Application {
 
                     Log.d("FessBox", "channelUpdate");
                     break;
-
-                case "channelVolumeChange":
+                }
+                case "channelVolumeChange": {
+                    final JSONObject data = message.getJSONObject("data");
                     updateChannels(data, new ChannelUpdateHandler() {
 
                         @Override
@@ -110,13 +111,24 @@ public class App extends Application {
 
                     Log.d("FessBox", "channelVolumeChange");
                     break;
+                }
+                case "masterUpdate": {
+                    JSONObject data = message.getJSONObject("data");
+                    state.put("master", data);
 
-                case "masterUpdate":
+                    Log.d("FessBox", "masterUpdate");
                     break;
+                }
+                case "masterVolumeChange": {
+                    JSONObject master = state.optJSONObject("master");
+                    if (master == null) {
+                        master = new JSONObject();
+                    }
+                    master.put("level", message.optInt("data"));
 
-                case "masterVolumeChange":
+                    Log.d("FessBox", "masterVolumeChange");
                     break;
-
+                }
                 case "userUpdate":
                     break;
 
