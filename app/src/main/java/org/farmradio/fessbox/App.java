@@ -1,28 +1,28 @@
 package org.farmradio.fessbox;
 
 import android.app.Application;
-import android.content.Context;
+import android.content.Intent;
+import android.os.CountDownTimer;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.BaseAdapter;
-import android.widget.SeekBar;
-import android.widget.Spinner;
-import android.widget.Switch;
-import android.widget.TextView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import de.tavendo.autobahn.WebSocketConnection;
+import de.tavendo.autobahn.WebSocketException;
+import de.tavendo.autobahn.WebSocketHandler;
 
 import java.util.Iterator;
 
 public class App extends Application {
 
+    public static final String LAUNCH_MAIN_ACTIVITY = "org.farmradio.fessbox.intent.LAUNCH_MAIN_ACTIVITY";
+
     private JSONObject state;
 
-    private ChannelAdapter adapter;
+    private final WebSocketConnection connection = new WebSocketConnection();
+
+    private final ConnectionHandler connectionHandler = new ConnectionHandler();
 
     public App() {
         try {
@@ -34,8 +34,42 @@ public class App extends Application {
         }
     }
 
-    public void setAdapter(ChannelAdapter adapter) {
-        this.adapter = adapter;
+    public void startMainActivity() {
+
+        Intent intent = new Intent();
+        intent.setAction(LAUNCH_MAIN_ACTIVITY);
+        sendBroadcast(intent);
+
+        /*
+        new CountDownTimer(2000, 1000) {
+
+            @Override
+            public void onFinish() {
+
+                Intent intent = new Intent();
+                intent.setAction(LAUNCH_MAIN_ACTIVITY);
+                sendBroadcast(intent);
+
+                //progress.dismiss();
+                //finish();
+
+                //Intent intent = new Intent(LaunchActivity.this, MainActivity.class);
+                //startActivity(intent);
+            }
+
+            @Override
+            public void onTick(long millisUntilFinished) { }
+
+        }.start();
+        */
+
+        /*
+        progress.dismiss();
+        finish();
+
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+        */
     }
 
     public int getChannelCount() {
@@ -83,7 +117,7 @@ public class App extends Application {
                         }
 
                     });
-                    this.adapter.notifyDataSetChanged();
+                    //this.adapter.notifyDataSetChanged();
 
                     Log.d("FessBox", "channelUpdate");
                     break;
@@ -107,7 +141,7 @@ public class App extends Application {
                         }
 
                     });
-                    this.adapter.notifyDataSetChanged();
+                    //this.adapter.notifyDataSetChanged();
 
                     Log.d("FessBox", "channelVolumeChange");
                     break;
@@ -158,6 +192,37 @@ public class App extends Application {
         }
     }
 
+    private void connectWebSocket() {
+        try {
+            connection.connect("ws://192.168.1.143:8001", connectionHandler);
+        } catch (WebSocketException exception) {
+            Log.d("FessBox", exception.toString());
+        }
+    }
+
+    class ConnectionHandler extends WebSocketHandler {
+
+        @Override
+        public void onOpen() {
+            App.this.startMainActivity();
+
+            Log.d("FessBox", "Status: Connected");
+        }
+
+        @Override
+        public void onTextMessage(String payload) {
+            App.this.receiveMessage(payload);
+
+            Log.d("FessBox", "Got: " + payload);
+        }
+
+        @Override
+        public void onClose(int code, String reason) {
+            Log.d("FessBox", "Connection lost.");
+        }
+
+    }
+
 }
 
 abstract class ChannelUpdateHandler {
@@ -169,77 +234,5 @@ abstract class ChannelUpdateHandler {
     }
 
     abstract void update(String key, JSONObject channel);
-
-}
-
-class ChannelAdapter extends BaseAdapter {
-
-    private static class ViewHolder {
-        TextView textView;
-        TextView channelNumber;
-        Switch toggle;
-        SeekBar seekBar;
-        Spinner spinner;
-    }
-
-    private LayoutInflater inflater;
-
-    private ArrayAdapter<CharSequence> modeSwitchAdapter;
-
-    private App app;
-
-    public ChannelAdapter(Context context, App app) {
-        super();
-
-        app.setAdapter(this);
-
-        this.app = app;
-        inflater = LayoutInflater.from(context);
-        modeSwitchAdapter = ArrayAdapter.createFromResource(
-                context,
-                R.array.modes,
-                android.R.layout.simple_spinner_dropdown_item);
-    }
-
-    @Override
-    public int getCount() {
-        return app.getChannelCount();
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return position;
-    }
-
-    @Override
-    public Object getItem(int position) {
-        return app.getChannel(position);
-    }
-
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        View view = convertView;
-        ViewHolder holder;
-        if (view == null) {
-            view = inflater.inflate(R.layout.list_view_item, parent, false);
-            holder = new ViewHolder();
-            holder.textView = (TextView) view.findViewById(R.id.textView);
-            holder.channelNumber = (TextView) view.findViewById(R.id.channelNumber);
-            holder.toggle = (Switch) view.findViewById(R.id.toggle);
-            holder.seekBar = (SeekBar) view.findViewById(R.id.seekBar);
-            holder.spinner = (Spinner) view.findViewById(R.id.spinner);
-            holder.spinner.setAdapter(modeSwitchAdapter);
-            view.setTag(holder);
-        } else {
-            holder = (ViewHolder) view.getTag();
-        }
-
-        JSONObject channel = (JSONObject) getItem(position);
-        holder.textView.setText(channel.optString("id"));
-        holder.channelNumber.setText(channel.optString("number"));
-        holder.seekBar.setProgress(channel.optInt("level"));
-
-        return view;
-    }
 
 }

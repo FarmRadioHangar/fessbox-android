@@ -1,58 +1,15 @@
 package org.farmradio.fessbox;
 
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
-
-import de.tavendo.autobahn.WebSocketConnection;
-import de.tavendo.autobahn.WebSocketException;
-import de.tavendo.autobahn.WebSocketHandler;
 
 public class LaunchActivity extends AppCompatActivity {
 
-    private final WebSocketConnection connection = new WebSocketConnection();
-
-    private final ConnectionHandler connectionHandler = new ConnectionHandler();
-
     private ProgressDialog progress;
-
-    public void startMainActivity() {
-        new CountDownTimer(2000, 1000) {
-
-            @Override
-            public void onFinish() {
-                progress.dismiss();
-                finish();
-
-                Intent intent = new Intent(LaunchActivity.this, MainActivity.class);
-                startActivity(intent);
-            }
-
-            @Override
-            public void onTick(long millisUntilFinished) { }
-
-        }.start();
-
-        /*
-        progress.dismiss();
-        finish();
-
-        Intent intent = new Intent(this, MainActivity.class);
-        startActivity(intent);
-        */
-    }
-
-
-    private void connect() {
-        try {
-            connection.connect("ws://192.168.1.143:8001", connectionHandler);
-        } catch (WebSocketException exception) {
-            Log.d("FessBox", exception.toString());
-        }
-   }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,30 +20,20 @@ public class LaunchActivity extends AppCompatActivity {
         progress.setMessage("Connecting to service.");
         progress.show();
 
-        connect();
-    }
+        new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (intent.getAction().equals(App.LAUNCH_MAIN_ACTIVITY)) {
+                    progress.dismiss();
+                    finish();
 
-    class ConnectionHandler extends WebSocketHandler {
+                    Intent main = new Intent(LaunchActivity.this, MainActivity.class);
+                    startActivity(main);
+                }
+            }
+        };
 
-        @Override
-        public void onOpen() {
-            LaunchActivity.this.startMainActivity();
-
-            Log.d("FessBox", "Status: Connected");
-        }
-
-        @Override
-        public void onTextMessage(String payload) {
-            Log.d("FessBox", "Got: " + payload);
-            //App app = (App) getApplication();
-            //app.receiveMessage(payload);
-        }
-
-        @Override
-        public void onClose(int code, String reason) {
-            Log.d("FessBox", "Connection lost.");
-        }
-
+        //connect();
     }
 
 }
