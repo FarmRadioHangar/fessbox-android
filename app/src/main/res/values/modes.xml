@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="modes">
+        <item>Host</item>
+        <item>Master</item>
+        <item>IVR</item>
+        <item>On Hold</item>
+    </string-array>
+</resources>
