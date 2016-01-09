@@ -20,9 +20,17 @@ public class WebSocketService extends IntentService {
     public void onCreate() {
         super.onCreate();
 
+        connectWebSocket();
+    }
+
+    @Override
+    protected void onHandleIntent(Intent intent) { }
+
+    private void connectWebSocket() {
         try {
             //192.168.1.38:19998
-            connection.connect("ws://192.168.1.143:8001", new WebSocketHandler() {
+            //192.168.1.143:8001
+            connection.connect("ws://192.168.1.38:19998", new WebSocketHandler() {
 
                 @Override
                 public void onOpen() {
@@ -51,8 +59,5 @@ public class WebSocketService extends IntentService {
             Log.d("FessBox", exception.toString());
         }
     }
-
-    @Override
-    protected void onHandleIntent(Intent intent) { }
 
 }
