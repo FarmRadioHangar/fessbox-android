@@ -112,6 +112,16 @@ public class App extends Application {
 
                     switch (message.optString("event")) {
 
+                        case "initialize": {
+                            JSONObject data = message.getJSONObject("data");
+                            state = data.getJSONObject("mixer");
+                            sendBroadcast(new Intent(App.CHANNEL_LIST_UPDATE));
+                            sendBroadcast(new Intent(App.MASTER_UPDATE));
+
+                            Log.d("FessBox", "state : " + state.toString());
+
+                            break;
+                        }
                         case "channelUpdate": {
                             final JSONObject data = message.getJSONObject("data");
                             updateChannels(data, new ChannelUpdateHandler() {
@@ -194,6 +204,7 @@ public class App extends Application {
                             break;
                     }
                 } catch (JSONException exception) {
+                    Log.e("FessBox", exception.toString());
                 }
             }
         }

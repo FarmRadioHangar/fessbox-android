@@ -43,6 +43,8 @@ public class MainActivity extends AppCompatActivity {
         filter.addAction(App.CHANNEL_LIST_UPDATE);
         filter.addCategory(Intent.CATEGORY_DEFAULT);
         registerReceiver(receiver, filter);
+
+        updateMaster();
     }
 
     @Override
@@ -58,6 +60,9 @@ public class MainActivity extends AppCompatActivity {
         JSONObject master = app.getMaster();
 
         int level = master.optInt("level");
+
+        Log.d("FessBox", "master level set to " + level);
+
         seekBar.setProgress(level);
     }
 
@@ -67,8 +72,14 @@ public class MainActivity extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             if (action.equals(App.CHANNEL_LIST_UPDATE)) {
+
+                Log.d("FessBox", "received CHANNEL_LIST_UPDATE");
+
                 adapter.notifyDataSetChanged();
             } else if (action.equals(App.MASTER_UPDATE)) {
+
+                Log.d("FessBox", "received MASTER_UPDATE");
+
                 updateMaster();
             }
         }
