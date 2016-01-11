@@ -64,7 +64,6 @@ public class LaunchActivity extends AppCompatActivity {
 
                 }.start();
 
-
                 /*
                 progress.dismiss();
                 finish();

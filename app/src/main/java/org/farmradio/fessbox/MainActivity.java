@@ -1,13 +1,9 @@
 package org.farmradio.fessbox;
 
-import android.app.Application;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -38,7 +34,6 @@ public class MainActivity extends AppCompatActivity {
 
         adapter = new ChannelAdapter(this);
         adapter.setApp((App) getApplication());
-        //adapter.setWebSocketService(service);
 
         ListView listView = (ListView) findViewById(R.id.listView);
         listView.setAdapter(adapter);
@@ -51,10 +46,14 @@ public class MainActivity extends AppCompatActivity {
         filter.addCategory(Intent.CATEGORY_DEFAULT);
         registerReceiver(receiver, filter);
 
-        //Intent intent = new Intent(this, WebSocketService.class);
-        //bindService(intent, connection, Context.BIND_AUTO_CREATE);
-
         updateMaster();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        unregisterReceiver(receiver);
     }
 
     @Override
@@ -115,11 +114,10 @@ class ChannelAdapter extends BaseAdapter {
 
     private App app;
 
-    //private WebSocketService service;
-
     public ChannelAdapter(Context context) {
         super();
 
+        inflater = LayoutInflater.from(context);
         modeSwitchAdapter = ArrayAdapter.createFromResource(
                 context,
                 R.array.modes,
@@ -129,10 +127,6 @@ class ChannelAdapter extends BaseAdapter {
     public void setApp(App app) {
         this.app = app;
     }
-
-    //public void setWebSocketService(WebSocketService service) {
-    //    this.service = service;
-    //}
 
     @Override
     public int getCount() {
@@ -179,15 +173,7 @@ class ChannelAdapter extends BaseAdapter {
                             + "\":"
                             + progress + "}";
 
-                    //service.send(message);
-
-                    //Intent intent = new Intent(App.SEND_MESSAGE);
-                    //intent.putExtra("payload", "{\"event\":\"channelVolume\",\"data\":{\""
-                    //        + channel.optString("id")
-                    //        + "\":"
-                    //        + progress + "}");
-
-                    //app.sendBroadcast(intent);
+                    app.send(message);
                 }
 
                 @Override
