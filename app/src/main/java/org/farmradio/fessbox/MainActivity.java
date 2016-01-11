@@ -1,9 +1,13 @@
 package org.farmradio.fessbox;
 
+import android.app.Application;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -32,7 +36,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        adapter = new ChannelAdapter(this, (App) getApplication());
+        adapter = new ChannelAdapter(this);
+        adapter.setApp((App) getApplication());
+        //adapter.setWebSocketService(service);
+
         ListView listView = (ListView) findViewById(R.id.listView);
         listView.setAdapter(adapter);
 
@@ -43,6 +50,9 @@ public class MainActivity extends AppCompatActivity {
         filter.addAction(App.CHANNEL_LIST_UPDATE);
         filter.addCategory(Intent.CATEGORY_DEFAULT);
         registerReceiver(receiver, filter);
+
+        //Intent intent = new Intent(this, WebSocketService.class);
+        //bindService(intent, connection, Context.BIND_AUTO_CREATE);
 
         updateMaster();
     }
@@ -76,6 +86,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("FessBox", "received CHANNEL_LIST_UPDATE");
 
                 adapter.notifyDataSetChanged();
+
             } else if (action.equals(App.MASTER_UPDATE)) {
 
                 Log.d("FessBox", "received MASTER_UPDATE");
@@ -104,16 +115,24 @@ class ChannelAdapter extends BaseAdapter {
 
     private App app;
 
-    public ChannelAdapter(Context context, App app) {
+    //private WebSocketService service;
+
+    public ChannelAdapter(Context context) {
         super();
 
-        this.app = app;
-        inflater = LayoutInflater.from(context);
         modeSwitchAdapter = ArrayAdapter.createFromResource(
                 context,
                 R.array.modes,
                 android.R.layout.simple_spinner_dropdown_item);
     }
+
+    public void setApp(App app) {
+        this.app = app;
+    }
+
+    //public void setWebSocketService(WebSocketService service) {
+    //    this.service = service;
+    //}
 
     @Override
     public int getCount() {
@@ -134,6 +153,9 @@ class ChannelAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         View view = convertView;
         ViewHolder holder;
+
+        final JSONObject channel = (JSONObject) getItem(position);
+
         if (view == null) {
             view = inflater.inflate(R.layout.list_view_item, parent, false);
             holder = new ViewHolder();
@@ -144,11 +166,42 @@ class ChannelAdapter extends BaseAdapter {
             holder.spinner = (Spinner) view.findViewById(R.id.spinner);
             holder.spinner.setAdapter(modeSwitchAdapter);
             view.setTag(holder);
+
+            holder.seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+
+                @Override
+                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+
+                    Log.d("FessBox", "progress : " + progress);
+
+                    String message = "{\"event\":\"channelVolume\",\"data\":{\""
+                            + channel.optString("id")
+                            + "\":"
+                            + progress + "}";
+
+                    //service.send(message);
+
+                    //Intent intent = new Intent(App.SEND_MESSAGE);
+                    //intent.putExtra("payload", "{\"event\":\"channelVolume\",\"data\":{\""
+                    //        + channel.optString("id")
+                    //        + "\":"
+                    //        + progress + "}");
+
+                    //app.sendBroadcast(intent);
+                }
+
+                @Override
+                public void onStartTrackingTouch(SeekBar seekBar) { }
+
+                @Override
+                public void onStopTrackingTouch(SeekBar seekBar) { }
+
+            });
+
         } else {
             holder = (ViewHolder) view.getTag();
         }
 
-        JSONObject channel = (JSONObject) getItem(position);
         holder.textView.setText(channel.optString("id"));
         holder.channelNumber.setText(channel.optString("number"));
         holder.seekBar.setProgress(channel.optInt("level"));
