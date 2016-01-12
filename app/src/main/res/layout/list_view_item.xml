@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:minWidth="100dp"
         android:layout_gravity="center"
-        android:id="@+id/textView" />
+        android:id="@+id/channelId" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -24,14 +24,14 @@
         android:layout_gravity="center"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/toggle" />
+        android:id="@+id/channelSwitch" />
 
     <SeekBar
         android:layout_weight="8"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:id="@+id/seekBar" />
+        android:id="@+id/channelSeekBar" />
 
     <Spinner
         android:layout_width="wrap_content"
@@ -39,6 +39,6 @@
         android:layout_gravity="center"
         android:layout_weight="1"
         android:spinnerMode="dialog"
-        android:id="@+id/spinner" />
+        android:id="@+id/channelSpinner" />
 
 </LinearLayout>
