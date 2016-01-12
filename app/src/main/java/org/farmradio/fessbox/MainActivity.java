@@ -153,11 +153,11 @@ class ChannelAdapter extends BaseAdapter {
         if (view == null) {
             view = inflater.inflate(R.layout.list_view_item, parent, false);
             holder = new ViewHolder();
-            holder.textView = (TextView) view.findViewById(R.id.textView);
+            holder.textView = (TextView) view.findViewById(R.id.channelId);
             holder.channelNumber = (TextView) view.findViewById(R.id.channelNumber);
-            holder.toggle = (Switch) view.findViewById(R.id.toggle);
-            holder.seekBar = (SeekBar) view.findViewById(R.id.seekBar);
-            holder.spinner = (Spinner) view.findViewById(R.id.spinner);
+            holder.toggle = (Switch) view.findViewById(R.id.channelSwitch);
+            holder.seekBar = (SeekBar) view.findViewById(R.id.channelSeekBar);
+            holder.spinner = (Spinner) view.findViewById(R.id.channelSpinner);
             holder.spinner.setAdapter(modeSwitchAdapter);
             view.setTag(holder);
 
