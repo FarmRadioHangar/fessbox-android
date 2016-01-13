@@ -68,7 +68,7 @@ public class WebSocketService extends Service {
         try {
             //192.168.1.38:19998
             //192.168.1.143:8001
-            connection.connect("ws://172.17.0.1:8001", new WebSocketHandler() {
+            connection.connect("ws://192.168.1.143:8001", new WebSocketHandler() {
 
                 @Override
                 public void onOpen() {
