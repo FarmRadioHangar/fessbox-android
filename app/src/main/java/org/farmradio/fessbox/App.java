@@ -27,6 +27,8 @@ public class App extends Application {
 
     private WebSocketService service;
 
+    private String clientId;
+
     private ServiceConnection connection = new ServiceConnection() {
 
         @Override
@@ -60,6 +62,8 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
 
+        clientId = "707";      // @TODO
+
         Intent intent = new Intent(this, WebSocketService.class);
         bindService(intent, connection, Context.BIND_AUTO_CREATE);
     }
@@ -68,6 +72,10 @@ public class App extends Application {
         if (bound) {
             service.send(message);
         }
+    }
+
+    public String getClientId() {
+        return clientId;
     }
 
     public int getChannelCount() {
